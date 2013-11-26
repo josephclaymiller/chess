@@ -36,5 +36,8 @@ class Board
     end
   end
 
+  def to_s
+
+  end
 
 end

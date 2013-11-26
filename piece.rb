@@ -1,6 +1,8 @@
 # require './board.rb'
 
 class Piece
+
+  PIECE_HASH = { :white => ♔♕♖♗♘♙}
   attr_accessor :position
   attr_reader :color
 
@@ -12,6 +14,10 @@ class Piece
 
   def moves
     raise "No method error"
+  end
+
+  def to_s
+    "#{self.PIECE_SYM[self.color]}"
   end
 
   def is_valid?(new_move)
@@ -66,18 +72,23 @@ class SlidingPiece < Piece
 end
 
 class Bishop < SlidingPiece
+  PIECE_SYM = {:white => '♗', :black => '♝'}
+
   def move_dirs
     :diagonal
   end
 end
 
 class Rook < SlidingPiece
+  PIECE_SYM = {:white => '♖', :black => '♜'}
+
   def move_dirs
     :straight
   end
 end
 
 class Queen < SlidingPiece
+  PIECE_SYM = {:white => '♕', :black => '♛'}
   def move_dirs
     :all
   end
@@ -102,14 +113,19 @@ class SteppingPiece < Piece
 end
 
 class King < SteppingPiece
+  PIECE_SYM = {:white => '♔', :black => '♚'}
   def move_offsets
     [[1,1],[1,0],[1,-1],[0,1],[0,-1],[-1,1],[-1,0],[-1,-1]]
+
+
   end
 
 
 end
 
 class Knight < SteppingPiece
+  PIECE_SYM = {:white => '♘', :black => '♞'}
+
   def move_offsets
     [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]
   end
@@ -117,6 +133,7 @@ class Knight < SteppingPiece
 end
 
 class Pawn < Piece
+  PIECE_SYM = {:white => '♙', :black => '♟'}
   attr_accessor :moved
 
   def initialize
