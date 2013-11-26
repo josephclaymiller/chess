@@ -32,13 +32,12 @@ class SlidingPiece < Piece
 
   def moves
     moves = []
-    direction = self.move_dirs
-    case direction
-    when direction == :diagonal
+    case self.move_dirs
+    when :diagonal
       self.diag_moves
-    when direction == :straight
+    when :straight
       self.straight_moves
-    when direction == :all
+    when :all
       self.straight_and_diag_moves
     end
   end
@@ -98,22 +97,79 @@ end
 
 
 class SteppingPiece < Piece
-  def moves(type)
+  def possible_move(offset)
+    [(@position[0] + offset[0]),(@position[1] + offset[1])]
   end
+
+  def moves
+    moves = []
+    self.move_offsets.each do |offset|
+      new_move = possible_move(offset)
+      moves << new_move if self.is_valid?(new_move)
+    end
+    moves
+  end
+
+
 end
 
 class King < SteppingPiece
-  def move_type
-    :king
+  def move_offsets
+    [[1,1],[1,0],[1,-1],[0,1],[0,-1],[-1,1],[-1,0],[-1,-1]]
   end
+
 
 end
 
 class Knight < SteppingPiece
-  def move_type
-    :knight
+  def move_offsets
+    [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]
   end
+
 end
 
 class Pawn < Piece
+  attr_accessor :moved
+
+  def initialize
+    super
+    @moved = false
+
+    case self.color
+    when :white
+       @offset = [1, 0]
+       @attack_offsets = [[1,1],[1,-1]]
+    when :black
+       @offset = [-1, 0]
+       @attack_offsets = [[-1,1],[-1,-1]]
+    end
+  end
+
+  def moved?
+    @moved
+  end
+
+  def moves
+    moves = []
+    moves << [self.position[0] + @offset[0], self.position[1] + @offset[1]]
+    unless moved?
+      moves << [self.position[0] + (@offset[0]*2), self.position[1] + (@offset[1]*2)]
+    end
+    attack_spots = @attack_offsets.map do |attack_offset|
+      [self.position[0] + attack_offset[0], self.position[1] + attack_offset[1]]
+    end
+    case @color
+    when :white
+      @board.black_pieces.each do |p|
+        moves << p.position if attack_spots.include?(p.position)
+      end
+    when :black
+      @board.white_pieces.each do |p|
+        moves << p.position if attack_spots.include?(p.position)
+      end
+    end
+
+    moves
+  end
 end
+
