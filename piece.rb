@@ -34,35 +34,23 @@ class SlidingPiece < Piece
     moves = []
     case self.move_dirs
     when :diagonal
-      self.diag_moves
+      build_moves(DIAG_OFFSETS)
     when :straight
-      self.straight_moves
+      build_moves(STRAIGHT_OFFSETS)
     when :all
-      self.straight_and_diag_moves
+      build_moves(STRAIGHT_OFFSETS) + build_moves(DIAG_OFFSETS)
     end
   end
 
-  def straight_and_diag_moves
-    self.diag_moves + self.straight_moves
-  end
-
-  def diag_moves
+  def build_moves(offsets)
     moves = []
 
-    DIAG_OFFSETS.each do |offset|
-      moves += self.possible_moves(offset)
-    end
-      moves
-  end
-
-  def straight_moves
-    moves = []
-
-    STRAIGHT_OFFSETS.each do |offset|
+    offsets.each do |offset|
       moves += self.possible_moves(offset)
     end
     moves
   end
+
 
   def possible_moves(offset)
     moves = []
