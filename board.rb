@@ -1,4 +1,9 @@
+require 'colorize'
 load 'piece.rb'
+
+
+class InvalidMoveError < StandardError
+end
 
 class Board
   attr_accessor :grid, :white_pieces, :black_pieces
@@ -48,16 +53,28 @@ class Board
   end
 
   def to_s
-    board_string = "_ A B C D E F G H \n"
-    @grid.each_with_index do |row,index|
-      row_string = "#{index + 1} "
-      row.each do |space|
+    white_color = true
+    board_string = "   A  B  C  D  E  F  G  H \n"
+    @grid.each_with_index do |row, row_index|
+      row_string = "#{row_index + 1} "
+      row.each_with_index do |space, col_index|
+        white_color = (row_index + col_index) % 2 == 0
         if space.nil?
-          row_string << "_"
+          if white_color
+            row_string << "   ".on_white
+          else
+            row_string << "   ".on_green
+          end
         else
-          row_string << space.to_s
+
+          if white_color
+            row_string << (" " + space.to_s + " ").black.on_white
+          else
+            row_string << (" " + space.to_s + " ").black.on_green
+          end
+
         end
-        row_string << " "
+        # no spaces between squares
       end
       board_string += (row_string + "\n")
     end
@@ -65,7 +82,12 @@ class Board
   end
 
   def play
-    while make_move
+    begin
+      while make_move
+      end
+    rescue InvalidMoveError => error
+      puts "#{error}"
+      retry
     end
   end
 
@@ -78,26 +100,41 @@ class Board
     end
 
     begin
+      # Move piece from
       puts "What is the location of the piece you would like to move?"
-      move_from = gets.chomp
-      move_from_row = move_from.scan(/\d/).first.to_i - 1
-      move_from_col = (move_from.scan(/[a-h]|[A-H]/).first.downcase.ord) - "a".ord
-      move_from_array = [move_from_row,move_from_col]
+      move_from_array = get_position
+
+      # Move piece to
       puts "What position would you like to move it to?"
-      move_to = gets.chomp
-      move_to_row = move_to.scan(/\d/).first.to_i - 1
-      move_to_col = (move_to.scan(/[a-h]|[A-H]/).first.downcase.ord) - "a".ord
-      move_to_array = [move_to_row,move_to_col]
+      move_to_array = get_position
 
       move(move_from_array, move_to_array)
 
-    rescue => error
+    rescue InvalidMoveError => error
       puts "#{error}"
       retry
     end
 
     change_turn
     true
+  end
+
+  def get_position
+    move = gets.chomp
+    # Row
+    move_row_arr = move.scan(/[1-8]/)
+    unless move_row_arr.length == 1
+      raise InvalidMoveError.new("Please enter a proper move")
+    end
+    move_row = move_row_arr.first.to_i - 1
+
+    # Col
+    move_col_arr = (move.scan(/[a-h]|[A-H]/))
+    unless move_col_arr.length == 1
+      raise InvalidMoveError.new("Please enter a proper move")
+    end
+    move_col = move_col_arr.first.downcase.ord - "a".ord
+    [move_row, move_col]
   end
 
   def change_turn
@@ -122,12 +159,13 @@ class Board
   end
 
   def move(pos1,pos2)
+
     piece = @grid[pos1[0]][pos1[1]]
 
-    raise "No piece error" if piece.nil?
-    raise "That is not your piece" unless piece.color == @turn
-    raise "You cannot move there" unless piece.moves.include?(pos2)
-    raise "You cannot move into check!" if piece.move_into_check?(pos2)
+    raise InvalidMoveError.new("No piece error") if piece.nil?
+    raise InvalidMoveError.new("That is not your piece") unless piece.color == @turn
+    raise InvalidMoveError.new("You cannot move there") unless piece.moves.include?(pos2)
+    raise InvalidMoveError.new("You cannot move into check!") if piece.move_into_check?(pos2)
     move!(pos1, pos2)
   end
 
