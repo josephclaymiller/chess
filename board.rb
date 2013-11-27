@@ -107,4 +107,32 @@ class Board
     @grid[pos2[0]][pos2[1]], @grid[pos1[0]][pos1[1]] = piece, nil
   end
 
+  def in_check?(color)
+    king_spot = king_pos(color)
+    case color
+    when :white
+      self.black_pieces.each do |piece|
+        return true if piece.moves.include?(king_spot)
+      end
+    when :black
+      self.white_pieces.each do |piece|
+        return true if piece.moves.include?(king_spot)
+      end
+    end
+    false
+  end
+
+  def king_pos(color)
+    case color
+    when :white
+      self.white_pieces.each do |piece|
+        return piece.position if piece.class == King
+      end
+    when :black
+      self.black_pieces.each do |piece|
+        return piece.position if piece.class == King
+      end
+    end
+  end
+
 end
