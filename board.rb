@@ -153,6 +153,7 @@ class Board
   end
 
   def checkmate?
+    return false unless self.in_check?(@turn)
     if @turn == :white
       self.white_pieces.each do |piece|
         return false unless piece.moves.all? {|move| piece.move_into_check?(move)}
