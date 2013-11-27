@@ -103,6 +103,13 @@ class Board
       # Move piece from
       puts "What is the location of the piece you would like to move?"
       move_from_array = get_position
+      piece = @grid[move_from_array[0]][move_from_array[1]]
+      # No piece there
+      raise InvalidMoveError.new("There is no piece there") if piece.nil?
+      # Not your piece
+      unless piece.color == @turn
+        raise InvalidMoveError.new("That is not your piece")
+      end
 
       # Move piece to
       puts "What position would you like to move it to?"
@@ -124,14 +131,14 @@ class Board
     # Row
     move_row_arr = move.scan(/[1-8]/)
     unless move_row_arr.length == 1
-      raise InvalidMoveError.new("Please enter a proper move")
+      raise InvalidMoveError.new("Please enter a valid row")
     end
     move_row = move_row_arr.first.to_i - 1
 
     # Col
     move_col_arr = (move.scan(/[a-h]|[A-H]/))
     unless move_col_arr.length == 1
-      raise InvalidMoveError.new("Please enter a proper move")
+      raise InvalidMoveError.new("Please enter a valid column")
     end
     move_col = move_col_arr.first.downcase.ord - "a".ord
     [move_row, move_col]
@@ -162,8 +169,6 @@ class Board
 
     piece = @grid[pos1[0]][pos1[1]]
 
-    raise InvalidMoveError.new("No piece error") if piece.nil?
-    raise InvalidMoveError.new("That is not your piece") unless piece.color == @turn
     raise InvalidMoveError.new("You cannot move there") unless piece.moves.include?(pos2)
     raise InvalidMoveError.new("You cannot move into check!") if piece.move_into_check?(pos2)
     move!(pos1, pos2)
