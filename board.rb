@@ -1,13 +1,12 @@
-require './piece.rb'
+load 'piece.rb'
 
 class Board
   attr_accessor :grid, :white_pieces, :black_pieces
 
-  def initialize
+  def initialize(new_board=true)
     @grid = Array.new(8) {Array.new(8) {nil}}
     @turn = :white
-    pieces_setup
-    make_move
+    pieces_setup if new_board
   end
 
   def white_pieces
@@ -49,9 +48,9 @@ class Board
   end
 
   def to_s
-    board_string = ""
-    @grid.each do |row|
-      row_string = ""
+    board_string = "_ A B C D E F G H \n"
+    @grid.each_with_index do |row,index|
+      row_string = "#{index + 1} "
       row.each do |space|
         if space.nil?
           row_string << "_"
@@ -65,17 +64,28 @@ class Board
     board_string
   end
 
+  def play
+    loop do
+    make_move
+    end
+  end
+
 
   def make_move
     puts self
     begin
       puts "What is the location of the piece you would like to move?"
-      move_from = gets.chomp.scan(/\d/).map {|i| i.to_i}
-
+      move_from = gets.chomp
+      move_from_row = move_from.scan(/\d/).first.to_i - 1
+      move_from_col = (move_from.scan(/[a-h]|[A-H]/).first.downcase.ord) - "a".ord
+      move_from_array = [move_from_row,move_from_col]
       puts "What position would you like to move it to?"
-      move_to = gets.chomp.scan(/\d/).map {|i| i.to_i}
+      move_to = gets.chomp
+      move_to_row = move_to.scan(/\d/).first.to_i - 1
+      move_to_col = (move_to.scan(/[a-h]|[A-H]/).first.downcase.ord) - "a".ord
+      move_to_array = [move_to_row,move_to_col]
 
-      move(move_from, move_to)
+      move(move_from_array, move_to_array)
 
     rescue => error
       puts "#{error}"
@@ -83,10 +93,6 @@ class Board
     end
 
     change_turn
-
-
-    #self.make_move
-
   end
 
   def change_turn
@@ -103,8 +109,26 @@ class Board
     raise "No piece error" if piece.nil?
     raise "That is not your piece" unless piece.color == @turn
     raise "You cannot move there" unless piece.moves.include?(pos2)
+    raise "You cannot move into check!" if piece.move_into_check?(pos2)
+    move!(pos1, pos2)
+  end
+
+  def move!(pos1, pos2)
+    piece = @grid[pos1[0]][pos1[1]]
     piece.position = pos2
     @grid[pos2[0]][pos2[1]], @grid[pos1[0]][pos1[1]] = piece, nil
+  end
+
+  def dup_board
+    board_dup = Board.new(false)
+    self.grid.each do |row|
+      row.each do |piece|
+        next unless piece
+        dup_piece = piece.class.new(piece.position.dup, piece.color, board_dup)
+        board_dup.grid[piece.position[0]][piece.position[1]] = dup_piece
+      end
+    end
+    board_dup
   end
 
   def in_check?(color)
@@ -135,4 +159,10 @@ class Board
     end
   end
 
+end
+
+
+if __FILE__ == $PROGRAM_NAME
+  game = Board.new()
+  game.play
 end
