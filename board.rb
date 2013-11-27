@@ -37,7 +37,20 @@ class Board
   end
 
   def to_s
-
+    board_string = ""
+    @grid.each do |row|
+      row_string = ""
+      row.each do |space|
+        if space.nil?
+          row_string << "_"
+        else
+          row_string << space.to_s
+        end
+        row_string << " "
+      end
+      board_string += (row_string + "\n")
+    end
+    board_string
   end
 
 end

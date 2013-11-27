@@ -1,8 +1,7 @@
+# encoding: utf-8
 # require './board.rb'
 
 class Piece
-
-  PIECE_HASH = { :white => ♔♕♖♗♘♙}
   attr_accessor :position
   attr_reader :color
 
@@ -17,7 +16,7 @@ class Piece
   end
 
   def to_s
-    "#{self.PIECE_SYM[self.color]}"
+    "#{self.piece_sym[self.color]}"
   end
 
   def is_valid?(new_move)
@@ -72,7 +71,9 @@ class SlidingPiece < Piece
 end
 
 class Bishop < SlidingPiece
-  PIECE_SYM = {:white => '♗', :black => '♝'}
+  def piece_sym
+    {:white => '♗', :black => '♝'}
+  end
 
   def move_dirs
     :diagonal
@@ -80,7 +81,9 @@ class Bishop < SlidingPiece
 end
 
 class Rook < SlidingPiece
-  PIECE_SYM = {:white => '♖', :black => '♜'}
+  def piece_sym
+    {:white => '♖', :black => '♜'}
+  end
 
   def move_dirs
     :straight
@@ -88,7 +91,10 @@ class Rook < SlidingPiece
 end
 
 class Queen < SlidingPiece
-  PIECE_SYM = {:white => '♕', :black => '♛'}
+  def piece_sym
+    {:white => '♕', :black => '♛'}
+  end
+
   def move_dirs
     :all
   end
@@ -113,7 +119,10 @@ class SteppingPiece < Piece
 end
 
 class King < SteppingPiece
-  PIECE_SYM = {:white => '♔', :black => '♚'}
+  def piece_sym
+    {:white => '♔', :black => '♚'}
+  end
+
   def move_offsets
     [[1,1],[1,0],[1,-1],[0,1],[0,-1],[-1,1],[-1,0],[-1,-1]]
 
@@ -124,7 +133,9 @@ class King < SteppingPiece
 end
 
 class Knight < SteppingPiece
-  PIECE_SYM = {:white => '♘', :black => '♞'}
+  def piece_sym
+    {:white => '♘', :black => '♞'}
+  end
 
   def move_offsets
     [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]
@@ -133,11 +144,13 @@ class Knight < SteppingPiece
 end
 
 class Pawn < Piece
-  PIECE_SYM = {:white => '♙', :black => '♟'}
+  def piece_sym
+    {:white => '♙', :black => '♟'}
+  end
   attr_accessor :moved
 
-  def initialize
-    super
+  def initialize(position, color, board)
+    super(position, color, board)
     @moved = false
 
     case self.color
