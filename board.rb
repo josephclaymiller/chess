@@ -65,14 +65,18 @@ class Board
   end
 
   def play
-    loop do
-    make_move
+    while make_move
     end
   end
 
 
   def make_move
     puts self
+    if checkmate?
+      puts "Checkmate.  #{@turn} lost."
+      return false
+    end
+
     begin
       puts "What is the location of the piece you would like to move?"
       move_from = gets.chomp
@@ -93,6 +97,7 @@ class Board
     end
 
     change_turn
+    true
   end
 
   def change_turn
@@ -101,6 +106,19 @@ class Board
     else
       @turn = :white
     end
+  end
+
+  def checkmate?
+    if @turn == :white
+      self.white_pieces.each do |piece|
+        return false unless piece.moves.all? {|move| piece.move_into_check?(move)}
+      end
+    else
+      self.black_pieces.each do |piece|
+        return false unless piece.moves.all? {|move| piece.move_into_check?(move)}
+      end
+    end
+    true
   end
 
   def move(pos1,pos2)
