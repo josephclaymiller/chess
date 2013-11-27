@@ -1,5 +1,5 @@
 require 'colorize'
-load 'piece.rb'
+require_relative 'pieces'
 
 
 class InvalidMoveError < StandardError
