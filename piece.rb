@@ -19,12 +19,15 @@ class Piece
     "#{self.piece_sym[self.color]}"
   end
 
-  def is_valid?(new_move)
+  def is_valid?(new_move, old_move = self.position)
     return false unless new_move.all? {|pos| pos >= 0 && pos < 8 }
+
     case @color
     when :white
+      return false if @board.black_pieces.any? {|p| p.position == old_move}
       @board.white_pieces.none? {|white_piece| white_piece.position == new_move}
     when :black
+      return false if @board.white_pieces.any? {|p| p.position == old_move}
       @board.black_pieces.none? {|black_piece| black_piece.position == new_move}
     end
   end
@@ -60,9 +63,11 @@ class SlidingPiece < Piece
   def possible_moves(offset)
     moves = []
     new_move = [(@position[0] + offset[0]),(@position[1] + offset[1])]
-    while self.is_valid?(new_move)
+    old_move = self.position
+    while self.is_valid?(new_move,old_move)
       moves << new_move
-      new_move = [(new_move[0] + offset[0]),(new_move[1] + offset[1])]
+      old_move = new_move
+      new_move = [(old_move[0] + offset[0]),(old_move[1] + offset[1])]
     end
     moves
   end
@@ -147,30 +152,27 @@ class Pawn < Piece
   def piece_sym
     {:white => '♙', :black => '♟'}
   end
-  attr_accessor :moved
 
   def initialize(position, color, board)
     super(position, color, board)
-    @moved = false
-
     case self.color
     when :white
-       @offset = [1, 0]
-       @attack_offsets = [[1,1],[1,-1]]
+      @start_row = 6
+      @offset = [-1, 0]
+      @attack_offsets = [[-1,1],[-1,-1]]
     when :black
-       @offset = [-1, 0]
-       @attack_offsets = [[-1,1],[-1,-1]]
+      @start_row = 1
+      @offset = [1, 0]
+      @attack_offsets = [[1,1],[1,-1]]
     end
   end
 
-  def moved?
-    @moved
-  end
+
 
   def moves
     moves = []
     moves << [self.position[0] + @offset[0], self.position[1] + @offset[1]]
-    unless moved?
+    if self.position[0] == @start_row
       moves << [self.position[0] + (@offset[0]*2), self.position[1] + (@offset[1]*2)]
     end
     attack_spots = @attack_offsets.map do |attack_offset|

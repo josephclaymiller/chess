@@ -5,9 +5,21 @@ class Board
 
   def initialize
     @grid = Array.new(8) {Array.new(8) {nil}}
-    @white_pieces = Array.new(16) {nil}
-    @black_pieces = Array.new(16) {nil}
+    @turn = :white
     pieces_setup
+    make_move
+  end
+
+  def white_pieces
+    @grid.flatten.select do |piece|
+      piece.color == :white if piece
+    end
+  end
+
+  def black_pieces
+    @grid.flatten.select do |piece|
+      piece.color == :black if piece
+    end
   end
 
   def pieces_setup
@@ -51,6 +63,48 @@ class Board
       board_string += (row_string + "\n")
     end
     board_string
+  end
+
+
+  def make_move
+    puts self
+    begin
+      puts "What is the location of the piece you would like to move?"
+      move_from = gets.chomp.scan(/\d/).map {|i| i.to_i}
+
+      puts "What position would you like to move it to?"
+      move_to = gets.chomp.scan(/\d/).map {|i| i.to_i}
+
+      move(move_from, move_to)
+
+    rescue => error
+      puts "#{error}"
+      retry
+    end
+
+    change_turn
+
+
+    #self.make_move
+
+  end
+
+  def change_turn
+    if @turn == :white
+      @turn = :black
+    else
+      @turn = :white
+    end
+  end
+
+  def move(pos1,pos2)
+    piece = @grid[pos1[0]][pos1[1]]
+
+    raise "No piece error" if piece.nil?
+    raise "That is not your piece" unless piece.color == @turn
+    raise "You cannot move there" unless piece.moves.include?(pos2)
+    piece.position = pos2
+    @grid[pos2[0]][pos2[1]], @grid[pos1[0]][pos1[1]] = piece, nil
   end
 
 end
