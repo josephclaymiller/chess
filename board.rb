@@ -89,10 +89,12 @@ class Board
     begin
       until checkmate?
         puts self
+        puts "#{@turn} is in check" if in_check?(@turn)
+        puts "#{@turn}'s turn"
         make_move
       end
       puts self
-      puts "Checkmate.  #{@turn} lost."
+      puts "Checkmate. #{@turn} lost."
     rescue InvalidMoveError => error
       puts "#{error}"
       retry
