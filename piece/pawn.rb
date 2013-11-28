@@ -29,17 +29,10 @@ class Pawn < Piece
     attack_spots = @attack_offsets.map do |attack_offset|
       [self.position[0] + attack_offset[0], self.position[1] + attack_offset[1]]
     end
-    case @color
-    when :white
-      @board.black_pieces.each do |p|
-        moves << p.position if attack_spots.include?(p.position)
-      end
-    when :black
-      @board.white_pieces.each do |p|
-        moves << p.position if attack_spots.include?(p.position)
-      end
-    end
 
+    @board.pieces_by_color(self.other_color).each do |p|
+      moves << p.position if attack_spots.include?(p.position)
+    end
     moves
   end
 end

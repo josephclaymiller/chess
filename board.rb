@@ -14,15 +14,13 @@ class Board
     pieces_setup if new_board
   end
 
-  def white_pieces
-    @grid.flatten.select do |piece|
-      piece.color == :white if piece
-    end
+  def pieces
+    @grid.flatten.compact
   end
 
-  def black_pieces
-    @grid.flatten.select do |piece|
-      piece.color == :black if piece
+  def pieces_by_color(color)
+    self.pieces.select do |piece|
+      piece.color == color
     end
   end
 
@@ -44,6 +42,7 @@ class Board
     @grid[row][0] = Rook.new([row, 0], c, self)
     @grid[row][7] = Rook.new([row, 7], c, self)
   end
+
 
   def pawn_setup(c)
     row = (c == :black ? 1 : 6)
@@ -83,8 +82,12 @@ class Board
 
   def play
     begin
-      while make_move
+      until checkmate?
+        puts self
+        make_move
       end
+
+       puts "Checkmate.  #{@turn} lost."
     rescue InvalidMoveError => error
       puts "#{error}"
       retry
@@ -93,12 +96,6 @@ class Board
 
 
   def make_move
-    puts self
-    if checkmate?
-      puts "Checkmate.  #{@turn} lost."
-      return false
-    end
-
     begin
       # Move piece from
       puts "What is the location of the piece you would like to move?"
@@ -154,14 +151,8 @@ class Board
 
   def checkmate?
     return false unless self.in_check?(@turn)
-    if @turn == :white
-      self.white_pieces.each do |piece|
-        return false unless piece.moves.all? {|move| piece.move_into_check?(move)}
-      end
-    else
-      self.black_pieces.each do |piece|
-        return false unless piece.moves.all? {|move| piece.move_into_check?(move)}
-      end
+    pieces_by_color(@turn).each do |piece|
+      return false unless piece.moves.all? {|move| piece.move_into_check?(move)}
     end
     true
   end
@@ -183,44 +174,26 @@ class Board
 
   def dup_board
     board_dup = Board.new(false)
-    self.grid.each do |row|
-      row.each do |piece|
-        next unless piece
-        dup_piece = piece.class.new(piece.position.dup, piece.color, board_dup)
-        board_dup.grid[piece.position[0]][piece.position[1]] = dup_piece
-      end
+    self.pieces.each do |piece|
+      dup_piece = piece.class.new(piece.position.dup, piece.color, board_dup)
+      board_dup.grid[piece.position[0]][piece.position[1]] = dup_piece
     end
     board_dup
   end
 
   def in_check?(color)
     king_spot = king_pos(color)
-    case color
-    when :white
-      self.black_pieces.each do |piece|
-        return true if piece.moves.include?(king_spot)
-      end
-    when :black
-      self.white_pieces.each do |piece|
-        return true if piece.moves.include?(king_spot)
-      end
+    pieces_by_color(color).each do |piece|
+      return true if piece.moves.include?(king_spot)
     end
     false
   end
 
   def king_pos(color)
-    case color
-    when :white
-      self.white_pieces.each do |piece|
-        return piece.position if piece.class == King
-      end
-    when :black
-      self.black_pieces.each do |piece|
-        return piece.position if piece.class == King
-      end
+    pieces_by_color(color).each do |piece|
+      return piece.position if piece.class == King
     end
   end
-
 end
 
 

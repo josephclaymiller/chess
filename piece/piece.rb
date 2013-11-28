@@ -14,25 +14,26 @@ class Piece
     raise "No method error"
   end
 
+  def other_color
+    if @color == :white
+      :black
+    else
+      :white
+    end
+  end
+
   def to_s
     "#{self.piece_sym[self.color]}"
   end
 
   def is_valid?(new_move, old_move = self.position)
     return false unless new_move.all? {|pos| pos >= 0 && pos < 8 }
-    case @color
-    when :white
-      return false if @board.black_pieces.any? {|p| p.position == old_move}
-      return false unless @board.white_pieces.none? do |white_piece|
-        white_piece.position == new_move
-      end
-    when :black
-      return false if @board.white_pieces.any? do |p|
-        p.position == old_move
-      end
-      return false unless @board.black_pieces.none? do |black_piece|
-        black_piece.position == new_move
-      end
+
+    return false if @board.pieces_by_color(self.other_color).any? do |p|
+      p.position == old_move
+    end
+    return false unless @board.pieces_by_color(@color).none? do |white_piece|
+      white_piece.position == new_move
     end
     true
   end
