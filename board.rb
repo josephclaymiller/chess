@@ -51,6 +51,14 @@ class Board
     end
   end
 
+  def formatted_tile(white_color, piece_string = " ")
+    if white_color
+      (" " + piece_string + " ").black.on_white
+    else
+      (" " + piece_string + " ").black.on_green
+    end
+  end
+
   def to_s
     white_color = true
     board_string = "   A  B  C  D  E  F  G  H \n"
@@ -59,21 +67,10 @@ class Board
       row.each_with_index do |space, col_index|
         white_color = (row_index + col_index) % 2 == 0
         if space.nil?
-          if white_color
-            row_string << "   ".on_white
-          else
-            row_string << "   ".on_green
-          end
+          row_string << formatted_tile(white_color)
         else
-
-          if white_color
-            row_string << (" " + space.to_s + " ").black.on_white
-          else
-            row_string << (" " + space.to_s + " ").black.on_green
-          end
-
+          row_string << formatted_tile(white_color, space.to_s)
         end
-        # no spaces between squares
       end
       board_string += (row_string + "\n")
     end
