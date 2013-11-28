@@ -14,6 +14,14 @@ class Board
     pieces_setup if new_board
   end
 
+  def [](pos)
+    @grid[pos[0]][pos[1]]
+  end
+
+  def []= (pos, value)
+    @grid[pos[0]][pos[1]] = value
+  end
+
   def pieces
     @grid.flatten.compact
   end
@@ -83,8 +91,8 @@ class Board
         puts self
         make_move
       end
-
-       puts "Checkmate.  #{@turn} lost."
+      puts self
+      puts "Checkmate.  #{@turn} lost."
     rescue InvalidMoveError => error
       puts "#{error}"
       retry
@@ -97,10 +105,8 @@ class Board
       # Move piece from
       puts "What is the location of the piece you would like to move?"
       move_from_array = get_position
-      piece = @grid[move_from_array[0]][move_from_array[1]]
-      # No piece there
+      piece = self[move_from_array]
       raise InvalidMoveError.new("There is no piece there") if piece.nil?
-      # Not your piece
       unless piece.color == @turn
         raise InvalidMoveError.new("That is not your piece")
       end
@@ -149,38 +155,54 @@ class Board
   def checkmate?
     return false unless self.in_check?(@turn)
     pieces_by_color(@turn).each do |piece|
-      return false unless piece.moves.all? {|move| piece.move_into_check?(move)}
+      return false unless piece.moves.all? do |move|
+        piece.move_into_check?(move)
+      end
     end
     true
   end
 
   def move(pos1,pos2)
 
-    piece = @grid[pos1[0]][pos1[1]]
+    piece = self[pos1]
 
-    raise InvalidMoveError.new("You cannot move there") unless piece.moves.include?(pos2)
-    raise InvalidMoveError.new("You cannot move into check!") if piece.move_into_check?(pos2)
+    unless piece.moves.include?(pos2)
+      raise InvalidMoveError.new("You cannot move there")
+    end
+    if piece.move_into_check?(pos2)
+      raise InvalidMoveError.new("You cannot move into check!")
+    end
+
     move!(pos1, pos2)
   end
 
   def move!(pos1, pos2)
-    piece = @grid[pos1[0]][pos1[1]]
+    piece = self[pos1]
     piece.position = pos2
-    @grid[pos2[0]][pos2[1]], @grid[pos1[0]][pos1[1]] = piece, nil
+    self[pos2] = piece
+    self[pos1] = nil
   end
 
   def dup_board
     board_dup = Board.new(false)
     self.pieces.each do |piece|
       dup_piece = piece.class.new(piece.position.dup, piece.color, board_dup)
-      board_dup.grid[piece.position[0]][piece.position[1]] = dup_piece
+      board_dup[piece.position] = dup_piece
     end
     board_dup
   end
 
+  def other_color(color)
+    if color == :white
+      :black
+    else
+      :white
+    end
+  end
+
   def in_check?(color)
     king_spot = king_pos(color)
-    pieces_by_color(color).each do |piece|
+    pieces_by_color(other_color(color)).each do |piece|
       return true if piece.moves.include?(king_spot)
     end
     false

@@ -1,0 +1,20 @@
+Move into check algorithm
+e7 e5
+f2 f3
+d8 h4
+
+Move into check mate algorithm
+white:
+f7 f5
+e2 e3
+g7 g5
+d1 h5
+
+black:
+e7 e5
+a2 a3
+d8 h4
+a3 a4
+f8 c5
+a4 a5
+h4 f2
